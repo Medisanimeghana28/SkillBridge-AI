@@ -8,7 +8,8 @@ import {
 import { motion } from "framer-motion";
 import { 
   Target, Dna, Briefcase, TrendingDown, 
-  ArrowRight, CheckCircle2, Circle, Clock, ChevronRight
+  ArrowRight, CheckCircle2, Circle, Clock, ChevronRight,
+  FileText, BadgeCheck, Map
 } from "lucide-react";
 import { Button } from "@/components/common/Button";
 import { cn } from "@/utils/cn";

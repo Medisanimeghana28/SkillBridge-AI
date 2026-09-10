@@ -323,8 +323,8 @@ export default function Passport() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-2">
-                  <Button variant="outline" className="w-full justify-center gap-2 h-12">
-                    <Download className="h-4 w-4" /> Export PDF
+                  <Button variant="outline" className="w-full justify-center gap-2 h-12" onClick={() => window.print()}>
+                    <Download className="h-4 w-4" /> Print / Save
                   </Button>
                   <Link to="/student/passport/preview" target="_blank" className="w-full">
                     <Button variant="outline" className="w-full justify-center gap-2 h-12">

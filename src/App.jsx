@@ -4,6 +4,7 @@ import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { storageService } from '@/services/storageService';
 import { StudentLayout } from '@/layouts/StudentLayout';
 import StudentDashboard from '@/pages/student/StudentDashboard';
 import PlaceholderPage from '@/components/common/PlaceholderPage';
@@ -12,6 +13,7 @@ import SkillDNA from '@/pages/student/SkillDNA';
 import SkillGapAnalyzer from '@/pages/student/SkillGapAnalyzer';
 import Roadmap from '@/pages/student/Roadmap';
 import Internships from '@/pages/student/Internships';
+import StudentChallenges from '@/pages/student/Challenges';
 import Applications from '@/pages/student/Applications';
 import Passport from '@/pages/student/Passport';
 import PassportPreview from '@/pages/student/PassportPreview';
@@ -24,39 +26,43 @@ import AcademiaSkillGaps from '@/pages/academia/SkillGaps';
 import AcademiaDemand from '@/pages/academia/Demand';
 import AcademiaTraining from '@/pages/academia/Training';
 
+// Industry Imports
+import IndustryLayout from '@/layouts/IndustryLayout';
+import IndustryDashboard from '@/pages/industry/Dashboard';
+import IndustryTalent from '@/pages/industry/Talent';
+import IndustryJobs from '@/pages/industry/Jobs';
+import IndustryChallenges from '@/pages/industry/Challenges';
+import IndustryRequirements from '@/pages/industry/Requirements';
+
+import IndustryFeedback from '@/pages/industry/Feedback';
+
+// Admin Imports
+import AdminLayout from '@/layouts/AdminLayout';
+import AdminDashboard from '@/pages/admin/Dashboard';
+
 // Simple Protected Route wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
   
-  const activeUser = user || (() => {
-    try {
-      const s = localStorage.getItem('sb_session');
-      return (s && s !== 'logged_out') ? JSON.parse(s) : null;
-    } catch {
-      return null;
-    }
-  })();
-  
   if (loading) return <div className="h-screen w-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"><span className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full"></span></div>;
 
-  if (!activeUser) {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
   
-  if (allowedRoles && !allowedRoles.includes(activeUser.role)) {
-    return <Navigate to={`/${activeUser.role}/dashboard`} replace />;
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to={`/${user.role}/dashboard`} replace />;
   }
   
   return children;
 };
 
-// Placeholder Dashboards for other roles
-const IndustryDashboard = () => <div className="p-8">Industry Dashboard (Coming Soon) <LogoutButton /></div>;
-
 const LogoutButton = () => {
   const { logout } = useAuth();
   return <button onClick={logout} className="mt-4 px-4 py-2 bg-red-500 text-white rounded">Logout</button>;
 }
+
+storageService.initMockData();
 
 function App() {
   return (
@@ -83,7 +89,7 @@ function App() {
               <Route path="skill-gap" element={<SkillGapAnalyzer />} />
               <Route path="roadmap" element={<Roadmap />} />
               <Route path="internships" element={<Internships />} />
-              <Route path="challenges" element={<PlaceholderPage title="Industry Challenges" />} />
+              <Route path="challenges" element={<StudentChallenges />} />
               <Route path="applications" element={<Applications />} />
               <Route path="passport" element={<Passport />} />
               <Route path="profile" element={<PlaceholderPage title="Student Profile" />} />
@@ -109,14 +115,36 @@ function App() {
 
             
             {/* Industry Routes */}
-            <Route path="/industry/*" element={
+            <Route path="/industry" element={
               <ProtectedRoute allowedRoles={['industry']}>
-                <Routes>
-                  <Route path="dashboard" element={<IndustryDashboard />} />
-                  <Route path="*" element={<Navigate to="dashboard" replace />} />
-                </Routes>
+                <IndustryLayout />
               </ProtectedRoute>
-            } />
+            }>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<IndustryDashboard />} />
+              <Route path="talent" element={<IndustryTalent />} />
+              <Route path="jobs" element={<IndustryJobs />} />
+              <Route path="challenges" element={<IndustryChallenges />} />
+              <Route path="requirements" element={<IndustryRequirements />} />
+              <Route path="feedback" element={<IndustryFeedback />} />
+              <Route path="settings" element={<PlaceholderPage title="Settings" />} />
+            </Route>
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminLayout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="students" element={<PlaceholderPage title="Admin Students Directory" />} />
+              <Route path="institutions" element={<PlaceholderPage title="Admin Institutions" />} />
+              <Route path="industries" element={<PlaceholderPage title="Admin Industry Partners" />} />
+              <Route path="skill-demand" element={<PlaceholderPage title="Ecosystem Skill Demand" />} />
+              <Route path="analytics" element={<PlaceholderPage title="Ecosystem Analytics" />} />
+              <Route path="settings" element={<PlaceholderPage title="Settings" />} />
+            </Route>
             
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

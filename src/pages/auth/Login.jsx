@@ -117,6 +117,7 @@ export default function Login() {
               <Button variant="outline" size="sm" onClick={() => handleDemoLogin('student@demo.com')} type="button">Student</Button>
               <Button variant="outline" size="sm" onClick={() => handleDemoLogin('academia@demo.com')} type="button">Academia</Button>
               <Button variant="outline" size="sm" onClick={() => handleDemoLogin('industry@demo.com')} type="button">Industry</Button>
+              <Button variant="outline" size="sm" onClick={() => handleDemoLogin('admin@demo.com')} type="button">Admin</Button>
             </div>
             <p className="mt-3 text-xs text-slate-500">Password for all demo accounts: <strong>password123</strong></p>
           </div>

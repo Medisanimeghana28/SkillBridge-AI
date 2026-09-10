@@ -26,6 +26,14 @@ const DEMO_USERS = [
     role: 'industry',
     company: 'TCS Digital',
     avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram',
+  },
+  {
+    id: 'u4',
+    name: 'Ecosystem Admin',
+    email: 'admin@demo.com',
+    password: 'password123',
+    role: 'admin',
+    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
   }
 ];
 

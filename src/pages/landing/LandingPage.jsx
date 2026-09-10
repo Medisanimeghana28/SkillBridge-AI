@@ -43,14 +43,14 @@ export default function LandingPage() {
               </p>
               
               <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/register">
+                <Link to="/login">
                   <Button size="lg" className="w-full sm:w-auto gap-2">
-                    Get Started <ArrowRight className="h-4 w-4" />
+                    Explore Platform <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <a href="#features">
+                <a href="#ecosystem">
                   <Button variant="outline" size="lg" className="w-full sm:w-auto bg-white/50 dark:bg-slate-900/50 backdrop-blur">
-                    Explore Platform
+                    View Demo
                   </Button>
                 </a>
               </div>

@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { ACADEMIA_DATA } from "@/data/academiaData";
 import { aiService } from "@/services/aiService";
+import { storageService } from "@/services/storageService";
 import { Button } from "@/components/common/Button";
 import { cn } from "@/utils/cn";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  BookOpen, BrainCircuit, Users, Clock, Target, Plus, X, ShieldCheck 
+  BookOpen, BrainCircuit, Users, Clock, Target, Plus, X, ShieldCheck, TrendingUp
 } from "lucide-react";
 
 export default function TrainingRecommendations() {

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { storageService } from "@/services/storageService";
 import { INTERNSHIP_DATA } from "@/data/internshipData";
 import { DEMO_STUDENT } from "@/data/demoData";
 import { aiService } from "@/services/aiService";
@@ -22,7 +23,7 @@ export default function InternshipPortal() {
   const [showFilters, setShowFilters] = useState(false);
   
   const [savedInternships, setSavedInternships] = useState(() => JSON.parse(localStorage.getItem('sb_saved_internships') || '[]'));
-  const [appliedInternships, setAppliedInternships] = useState(() => JSON.parse(localStorage.getItem('sb_applied_internships') || '[]'));
+  const [appliedInternships, setAppliedInternships] = useState(() => storageService.getApplications());
 
   const [compareList, setCompareList] = useState([]);
   const [showCompare, setShowCompare] = useState(false);
@@ -35,7 +36,7 @@ export default function InternshipPortal() {
 
   // Compute matches for all internships
   const internshipsWithMatch = useMemo(() => {
-    return INTERNSHIP_DATA.map(internship => {
+    return storageService.getInternships().map(internship => {
       const matchData = aiService.calculateInternshipMatch(DEMO_STUDENT.detailedSkills, internship.requiredSkills);
       const gaps = aiService.identifyInternshipSkillGaps(DEMO_STUDENT.detailedSkills, internship.requiredSkills);
       const explanation = aiService.generateInternshipMatchExplanation(matchData);
@@ -93,21 +94,21 @@ export default function InternshipPortal() {
     
     const newApplication = {
       id: `app_${Date.now()}`,
+      studentId: DEMO_STUDENT.id,
+      studentName: DEMO_STUDENT.name,
       internshipId: applyingInternship.id,
       company: applyingInternship.company,
       role: applyingInternship.role,
       matchScore: applyingInternship.matchData.matchScore,
-      appliedDate: new Date().toISOString().split('T')[0],
+      appliedAt: new Date().toISOString(),
       status: 'Applied'
     };
     
-    const updatedApps = [...appliedInternships, newApplication];
-    setAppliedInternships(updatedApps);
-    localStorage.setItem('sb_applied_internships', JSON.stringify(updatedApps));
+    storageService.saveApplication(newApplication);
+    setAppliedInternships(storageService.getApplications());
     
     setApplyingInternship(null);
     setSelectedInternship(null);
-    // Could add toast here
   };
 
   return (

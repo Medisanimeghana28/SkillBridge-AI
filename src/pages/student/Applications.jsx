@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/common/Button";
-import { FileText, Clock, CheckCircle2, XCircle, Search, Filter } from "lucide-react";
+import { storageService } from "@/services/storageService";
+import { FileText, Clock, CheckCircle2, XCircle, Search, Star } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 export default function Applications() {
-  const [applications, setApplications] = useState(() => JSON.parse(localStorage.getItem('sb_applied_internships') || '[]'));
+  const [applications, setApplications] = useState(() => storageService.getApplications());
   const [statusFilter, setStatusFilter] = useState("All");
 
   const filteredApps = statusFilter === "All" ? applications : applications.filter(a => a.status === statusFilter);
@@ -15,6 +16,8 @@ export default function Applications() {
       case 'Applied': return <FileText className="h-4 w-4" />;
       case 'Under Review': return <Clock className="h-4 w-4" />;
       case 'Shortlisted': return <CheckCircle2 className="h-4 w-4" />;
+      case 'Interview': return <Star className="h-4 w-4" />;
+      case 'Selected': return <CheckCircle2 className="h-4 w-4" />;
       case 'Rejected': return <XCircle className="h-4 w-4" />;
       default: return null;
     }
@@ -24,7 +27,9 @@ export default function Applications() {
     switch (status) {
       case 'Applied': return "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400";
       case 'Under Review': return "bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400";
-      case 'Shortlisted': return "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+      case 'Shortlisted': return "bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+      case 'Interview': return "bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400";
+      case 'Selected': return "bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
       case 'Rejected': return "bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400";
       default: return "";
     }

@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { motion, AnimatePresence } from "framer-motion";
-import { ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from "recharts";
 
 export default function Roadmap() {
   const location = useLocation();

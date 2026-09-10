@@ -1,5 +1,6 @@
 import { ACADEMIA_DATA } from "@/data/academiaData";
 import { aiService } from "@/services/aiService";
+import { storageService } from "@/services/storageService";
 import { AlertCircle, Target } from "lucide-react";
 import { cn } from "@/utils/cn";
 
@@ -97,6 +98,35 @@ export default function SkillGaps() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          Direct Industry Feedback
+          <span className="text-xs font-normal text-slate-500 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded">Prototype Data</span>
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {storageService.getFeedback().length === 0 ? (
+            <p className="text-slate-500 text-sm">No feedback received from industry partners yet.</p>
+          ) : (
+            storageService.getFeedback().map(fb => (
+              <div key={fb.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl shadow-sm">
+                <div className="flex justify-between items-start mb-2">
+                  <div className="font-bold text-slate-900 dark:text-white">{fb.skill}</div>
+                  <span className={cn("px-2 py-0.5 rounded text-[10px] uppercase font-bold", fb.importance === 'High' ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400" : "bg-amber-100 text-amber-700")}>
+                    {fb.importance} Priority
+                  </span>
+                </div>
+                <p className="text-sm text-slate-600 dark:text-slate-400 italic mb-3">"{fb.comment}"</p>
+                <div className="text-xs text-slate-500 flex justify-between">
+                  <span>From: {fb.company}</span>
+                  <span>{new Date(fb.submittedAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>
