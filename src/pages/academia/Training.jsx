@@ -10,10 +10,7 @@ import {
 } from "lucide-react";
 
 export default function TrainingRecommendations() {
-  const [trainings, setTrainings] = useState(() => {
-    const saved = localStorage.getItem('sb_training_programs');
-    return saved ? JSON.parse(saved) : ACADEMIA_DATA.defaultTraining;
-  });
+  const [trainings, setTrainings] = useState(() => storageService.getTrainingPrograms());
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
@@ -35,9 +32,8 @@ export default function TrainingRecommendations() {
       status: 'Planned'
     };
 
-    const updated = [newTraining, ...trainings];
-    setTrainings(updated);
-    localStorage.setItem('sb_training_programs', JSON.stringify(updated));
+    storageService.saveTrainingProgram(newTraining);
+    setTrainings(storageService.getTrainingPrograms());
     setShowCreateModal(false);
     
     // Simulate Toast
@@ -47,8 +43,10 @@ export default function TrainingRecommendations() {
 
   const updateStatus = (id, newStatus) => {
     const updated = trainings.map(t => t.id === id ? { ...t, status: newStatus } : t);
-    setTrainings(updated);
+    // Since storageService doesn't have an updateStatus for training, we can update localstorage directly,
+    // or add an update function. For prototype, direct local storage update is fine since the key is the same.
     localStorage.setItem('sb_training_programs', JSON.stringify(updated));
+    setTrainings(updated);
   };
 
   return (

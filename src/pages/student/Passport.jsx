@@ -10,11 +10,10 @@ import {
   ExternalLink, Share2, Download, Check, Award, Copy, Briefcase, 
   ChevronRight, BrainCircuit
 } from "lucide-react";
+import { storageService } from "@/services/storageService";
 
 export default function Passport() {
-  const [completedChallenges, setCompletedChallenges] = useState(() => {
-    return JSON.parse(localStorage.getItem('sb_completed_challenges') || '[]');
-  });
+  const [completedChallenges, setCompletedChallenges] = useState(() => storageService.getCompletedChallenges());
 
   const [skillsWithStatus, setSkillsWithStatus] = useState([]);
   const [selectedSkill, setSelectedSkill] = useState(null);

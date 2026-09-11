@@ -49,7 +49,7 @@ export const storageService = {
     if (!localStorage.getItem(KEYS.APPLICATIONS)) set(KEYS.APPLICATIONS, []);
     if (!localStorage.getItem(KEYS.COMPLETED_CHALLENGES)) set(KEYS.COMPLETED_CHALLENGES, []);
     if (!localStorage.getItem(KEYS.SHORTLIST)) set(KEYS.SHORTLIST, []);
-    if (!localStorage.getItem(KEYS.TRAINING)) set(KEYS.TRAINING, []);
+    if (!localStorage.getItem(KEYS.TRAINING)) set(KEYS.TRAINING, ACADEMIA_DATA.defaultTraining || []);
     if (!localStorage.getItem(KEYS.FEEDBACK)) set(KEYS.FEEDBACK, []);
   },
 

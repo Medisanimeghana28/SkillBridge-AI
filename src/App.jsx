@@ -17,6 +17,8 @@ import StudentChallenges from '@/pages/student/Challenges';
 import Applications from '@/pages/student/Applications';
 import Passport from '@/pages/student/Passport';
 import PassportPreview from '@/pages/student/PassportPreview';
+import StudentProfile from '@/pages/student/Profile';
+import StudentSettings from '@/pages/student/Settings';
 
 // Academia Imports
 import AcademiaLayout from '@/layouts/AcademiaLayout';
@@ -92,8 +94,8 @@ function App() {
               <Route path="challenges" element={<StudentChallenges />} />
               <Route path="applications" element={<Applications />} />
               <Route path="passport" element={<Passport />} />
-              <Route path="profile" element={<PlaceholderPage title="Student Profile" />} />
-              <Route path="settings" element={<PlaceholderPage title="Account Settings" />} />
+              <Route path="profile" element={<StudentProfile />} />
+              <Route path="settings" element={<StudentSettings />} />
             </Route>
 
             {/* Academia Routes */}
