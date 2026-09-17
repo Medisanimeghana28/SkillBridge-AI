@@ -60,12 +60,31 @@ export default function Datasets() {
   };
 
   const startMapping = () => {
-    // Auto-map where possible
+    // Auto-map where possible based on common dataset headers
     const autoMap = {};
     columns.forEach(col => {
       const lower = col.toLowerCase();
+      // Industry reqs
       if (lower.includes('role') || lower.includes('title')) autoMap['role_name'] = col;
       if (lower.includes('skill')) autoMap['skills'] = col;
+      
+      // Students
+      if (lower === 'student_id') autoMap['student_id'] = col;
+      if (lower === 'vocational_program') autoMap['vocational_program'] = col;
+      if (lower === 'academic_performance') autoMap['academic_performance'] = col;
+      if (lower === 'skill_1') autoMap['skill_1'] = col;
+      if (lower === 'skill_2') autoMap['skill_2'] = col;
+      if (lower === 'skill_3') autoMap['skill_3'] = col;
+      if (lower === 'skill_4') autoMap['skill_4'] = col;
+      if (lower === 'skill_5') autoMap['skill_5'] = col;
+
+      // Employability
+      if (lower === 'sl_no') autoMap['sl_no'] = col;
+      if (lower === 'degree_p') autoMap['degree_p'] = col;
+      if (lower === 'degree_t') autoMap['degree_t'] = col;
+      if (lower === 'etest_p') autoMap['etest_p'] = col;
+      if (lower === 'specialisation') autoMap['specialisation'] = col;
+      if (lower === 'status') autoMap['status'] = col;
     });
     setMapping(autoMap);
     setStep(3);
@@ -77,6 +96,18 @@ export default function Datasets() {
       let result;
       if (datasetType === 'industry_requirements') {
         result = await importService.importIndustryRequirements(
+          parsedRows, 
+          mapping, 
+          { name: file.name, type: datasetType }
+        );
+      } else if (datasetType === 'students') {
+        result = await importService.importStudents(
+          parsedRows, 
+          mapping, 
+          { name: file.name, type: datasetType }
+        );
+      } else if (datasetType === 'employability') {
+        result = await importService.importEmployability(
           parsedRows, 
           mapping, 
           { name: file.name, type: datasetType }
@@ -125,7 +156,8 @@ export default function Datasets() {
                   onChange={(e) => setDatasetType(e.target.value)}
                 >
                   <option value="industry_requirements">Industry Role Requirements</option>
-                  <option value="student_skills" disabled>Student Skills (Coming Soon)</option>
+                  <option value="students">Students Dataset (Vocational)</option>
+                  <option value="employability">Employability/Campus Recruitment Dataset</option>
                   <option value="internships" disabled>Internships (Coming Soon)</option>
                 </select>
                </div>

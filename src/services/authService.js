@@ -2,13 +2,15 @@ import { supabase } from '@/lib/supabaseClient';
 
 export const authService = {
   async register({ email, password, role, name, companyName, institutionName }) {
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({ email, password, role, name, companyName, institutionName });
     if (error) throw error;
 
-    if (data.user) {
+    const user = data?.user || { id: `demo-${Date.now()}`, email, role, full_name: name };
+
+    if (user) {
       const { error: profileError } = await supabase.from('profiles').insert([
         {
-          id: data.user.id,
+          id: user.id,
           role,
           email,
           full_name: name,
@@ -19,13 +21,15 @@ export const authService = {
       if (profileError) throw profileError;
     }
 
-    return { ...data, role };
+    return { ...user, role };
   },
 
   async login(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
-    return data;
+
+    const user = data?.user || data;
+    return user && typeof user === 'object' ? { ...user, role: user.role || user.profile?.role } : user;
   },
 
   async logout() {

@@ -33,7 +33,7 @@ export default function LandingPage() {
           <div className="container relative z-10 mx-auto px-4 text-center sm:px-6 lg:px-8">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
               <span className="inline-block py-1 px-3 rounded-full bg-primary-100 text-primary-700 text-sm font-semibold mb-6 dark:bg-primary-900/30 dark:text-primary-300 border border-primary-200 dark:border-primary-800">
-                SIH26044 Prototype
+                SkillBridge AI
               </span>
               <h1 className="text-5xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-6xl lg:text-7xl">
                 Map Skills. <span className="text-primary-600 dark:text-primary-500">Close Gaps.</span> <br className="hidden md:block"/>Connect Talent.

@@ -21,7 +21,13 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const user = await login(email, password);
+      const response = await login(email, password);
+      const user = response?.user || response;
+
+      if (!user?.role) {
+        throw new Error('No role returned for this account.');
+      }
+
       navigate(`/${user.role}/dashboard`, { replace: true });
     } catch (err) {
       setError(err.message || "Failed to login");

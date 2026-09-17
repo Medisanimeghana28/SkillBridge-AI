@@ -12,7 +12,7 @@ export function Footer() {
             </span>
           </div>
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            © 2026 SkillBridge AI. SIH26044 Hackathon Prototype.
+            © 2026 SkillBridge AI.
           </p>
         </div>
       </div>
