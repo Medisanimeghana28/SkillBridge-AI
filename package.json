@@ -1,0 +1,46 @@
+{
+  "name": "skillbridge-ai",
+  "version": "0.0.0",
+  "private": true,
+  "description": "project",
+  "keywords": [
+    "skills",
+    "gap",
+    "suggest"
+  ],
+  "homepage": "https://github.com/Medisanimeghana28/SkillBridge-AI#readme",
+  "bugs": {
+    "url": "https://github.com/Medisanimeghana28/SkillBridge-AI/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Medisanimeghana28/SkillBridge-AI.git"
+  },
+  "license": "ISC",
+  "author": "meghana",
+  "type": "module",
+  "main": "postcss.config.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.11.11",
+    "lucide-react": "^0.453.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.27.0",
+    "recharts": "^2.13.0",
+    "tailwind-merge": "^2.5.4"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14",
+    "vite": "^5.4.10"
+  }
+}
