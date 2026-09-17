@@ -132,11 +132,11 @@ export default function StudentChallenges() {
                 <form id="challengeForm" onSubmit={handleSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">GitHub Repository URL</label>
-                    <input type="url" defaultValue="https://github.com/aarav/demo-solution" className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" readOnly />
+                    <input type="url" placeholder="https://github.com/your-username/repository" className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" readOnly />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Live Demo URL (Optional)</label>
-                    <input type="url" defaultValue="https://demo-solution.vercel.app" className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" readOnly />
+                    <input type="url" placeholder="https://your-demo-url.vercel.app" className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" readOnly />
                   </div>
                 </form>
               </div>

@@ -19,6 +19,8 @@ import Passport from '@/pages/student/Passport';
 import PassportPreview from '@/pages/student/PassportPreview';
 import StudentProfile from '@/pages/student/Profile';
 import StudentSettings from '@/pages/student/Settings';
+import Onboarding from '@/pages/student/Onboarding';
+import ResumeAnalyzer from '@/pages/student/ResumeAnalyzer';
 
 // Academia Imports
 import AcademiaLayout from '@/layouts/AcademiaLayout';
@@ -41,9 +43,10 @@ import IndustryFeedback from '@/pages/industry/Feedback';
 // Admin Imports
 import AdminLayout from '@/layouts/AdminLayout';
 import AdminDashboard from '@/pages/admin/Dashboard';
+import Datasets from '@/pages/admin/Datasets';
 
 // Simple Protected Route wrapper
-const ProtectedRoute = ({ children, allowedRoles }) => {
+const ProtectedRoute = ({ children, allowedRoles, requireOnboarding = true }) => {
   const { user, loading } = useAuth();
   
   if (loading) return <div className="h-screen w-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950"><span className="animate-spin h-8 w-8 border-4 border-primary-500 border-t-transparent rounded-full"></span></div>;
@@ -56,6 +59,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to={`/${user.role}/dashboard`} replace />;
   }
   
+  if (requireOnboarding && user.role === 'student' && user.hasCompletedProfile === false) {
+    return <Navigate to="/student/onboarding" replace />;
+  }
+
+  if (!requireOnboarding && user.role === 'student' && user.hasCompletedProfile !== false) {
+    return <Navigate to="/student/dashboard" replace />;
+  }
+  
   return children;
 };
 
@@ -64,7 +75,6 @@ const LogoutButton = () => {
   return <button onClick={logout} className="mt-4 px-4 py-2 bg-red-500 text-white rounded">Logout</button>;
 }
 
-storageService.initMockData();
 
 function App() {
   return (
@@ -78,6 +88,13 @@ function App() {
             
             {/* Public Preview Route (does not need sidebar layout) */}
             <Route path="/student/passport/preview" element={<PassportPreview />} />
+            
+            {/* Student Onboarding Route */}
+            <Route path="/student/onboarding" element={
+              <ProtectedRoute allowedRoles={['student']} requireOnboarding={false}>
+                <Onboarding />
+              </ProtectedRoute>
+            } />
             
             {/* Student Routes */}
             <Route path="/student" element={
@@ -96,6 +113,7 @@ function App() {
               <Route path="passport" element={<Passport />} />
               <Route path="profile" element={<StudentProfile />} />
               <Route path="settings" element={<StudentSettings />} />
+              <Route path="resume-analyzer" element={<ResumeAnalyzer />} />
             </Route>
 
             {/* Academia Routes */}
@@ -140,6 +158,7 @@ function App() {
             }>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="datasets" element={<Datasets />} />
               <Route path="students" element={<PlaceholderPage title="Admin Students Directory" />} />
               <Route path="institutions" element={<PlaceholderPage title="Admin Institutions" />} />
               <Route path="industries" element={<PlaceholderPage title="Admin Industry Partners" />} />

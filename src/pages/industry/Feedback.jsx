@@ -75,9 +75,10 @@ export default function IndustryFeedback() {
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Current Student Rating (1-5)</label>
               <select name="rating" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-teal-500">
+                <option value="">Select a rating</option>
                 <option value="1">1 - Very Poor</option>
                 <option value="2">2 - Needs Improvement</option>
-                <option value="3" defaultValue>3 - Average</option>
+                <option value="3">3 - Average</option>
                 <option value="4">4 - Good</option>
                 <option value="5">5 - Excellent</option>
               </select>

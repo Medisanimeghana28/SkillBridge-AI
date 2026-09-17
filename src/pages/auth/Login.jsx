@@ -11,14 +11,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  const handleDemoLogin = (demoEmail) => {
-    setEmail(demoEmail);
-    setPassword("password123");
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,16 +106,6 @@ export default function Login() {
             Don't have an account? <Link to="/register" className="font-semibold text-primary-600 hover:text-primary-500 dark:text-primary-400">Sign up</Link>
           </p>
 
-          <div className="mt-12 p-6 rounded-xl bg-slate-50 border border-slate-200 dark:bg-slate-900 dark:border-slate-800">
-            <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Demo Access</h4>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleDemoLogin('student@demo.com')} type="button">Student</Button>
-              <Button variant="outline" size="sm" onClick={() => handleDemoLogin('academia@demo.com')} type="button">Academia</Button>
-              <Button variant="outline" size="sm" onClick={() => handleDemoLogin('industry@demo.com')} type="button">Industry</Button>
-              <Button variant="outline" size="sm" onClick={() => handleDemoLogin('admin@demo.com')} type="button">Admin</Button>
-            </div>
-            <p className="mt-3 text-xs text-slate-500">Password for all demo accounts: <strong>password123</strong></p>
-          </div>
         </div>
       </div>
       

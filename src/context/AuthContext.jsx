@@ -1,58 +1,58 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { authService } from '@/services/authService';
+import { supabase } from '@/lib/supabaseClient';
 
-const AuthContext = createContext();
-
-const DEMO_STUDENT_USER = {
-  id: 'u1',
-  name: 'Aarav Sharma',
-  email: 'student@demo.com',
-  role: 'student',
-  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav',
-};
+const AuthContext = createContext({});
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    try {
-      const session = localStorage.getItem('sb_session');
-      if (session === 'logged_out') return null;
-      if (session) return JSON.parse(session);
-      return DEMO_STUDENT_USER;
-    } catch (e) {
-      return DEMO_STUDENT_USER;
-    }
-  });
-  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Keep local storage in sync
-    if (user) {
-      localStorage.setItem('sb_session', JSON.stringify(user));
-    }
-  }, [user]);
+    const initAuth = async () => {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Auth init error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const login = async (email, password) => {
-    const userData = await authService.login(email, password);
-    setUser(userData);
-    return userData;
-  };
+    initAuth();
 
-  const register = async (userData) => {
-    const newUser = await authService.register(userData);
-    setUser(newUser);
-    return newUser;
-  };
+    const { data: { subscription } = { subscription: { unsubscribe: () => {} } } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session) {
+        const currentUser = await authService.getCurrentUser();
+        setUser(currentUser);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
 
-  const logout = () => {
-    authService.logout();
-    setUser(null);
+    return () => {
+      subscription?.unsubscribe?.();
+    };
+  }, []);
+
+  const value = {
+    user,
+    role: user?.profile?.role || null,
+    loading,
+    login: (email, password) => authService.login(email, password),
+    register: (payload) => authService.register(payload),
+    logout: () => authService.logout()
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  return useContext(AuthContext);
+};

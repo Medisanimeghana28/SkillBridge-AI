@@ -1,120 +1,52 @@
-// Simulated backend service for authentication
-
-const DEMO_USERS = [
-  {
-    id: 'u1',
-    name: 'Aarav Sharma',
-    email: 'student@demo.com',
-    password: 'password123',
-    role: 'student',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav',
-  },
-  {
-    id: 'u2',
-    name: 'Dr. Meera Patel',
-    email: 'academia@demo.com',
-    password: 'password123',
-    role: 'academia',
-    institution: 'IIT Bombay',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Meera',
-  },
-  {
-    id: 'u3',
-    name: 'Vikram Malhotra',
-    email: 'industry@demo.com',
-    password: 'password123',
-    role: 'industry',
-    company: 'TCS Digital',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Vikram',
-  },
-  {
-    id: 'u4',
-    name: 'Ecosystem Admin',
-    email: 'admin@demo.com',
-    password: 'password123',
-    role: 'admin',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Admin',
-  }
-];
-
-// Initialize mock DB in localStorage if empty
-const initDB = () => {
-  if (!localStorage.getItem('sb_users')) {
-    localStorage.setItem('sb_users', JSON.stringify(DEMO_USERS));
-  }
-};
-
-// Simulate network delay
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+import { supabase } from '@/lib/supabaseClient';
 
 export const authService = {
-  login: async (email, password) => {
-    initDB();
-    await delay(800); // Simulate network latency
+  async register({ email, password, role, name, companyName, institutionName }) {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
 
-    const users = JSON.parse(localStorage.getItem('sb_users'));
-    const user = users.find(u => u.email === email && u.password === password);
-
-    if (!user) {
-      throw new Error('Invalid email or password');
+    if (data.user) {
+      const { error: profileError } = await supabase.from('profiles').insert([
+        {
+          id: data.user.id,
+          role,
+          email,
+          full_name: name,
+          company_name: companyName || null,
+          institution_name: institutionName || null
+        }
+      ]);
+      if (profileError) throw profileError;
     }
 
-    // Exclude password from session
-    const { password: _, ...userSession } = user;
-    localStorage.setItem('sb_session', JSON.stringify(userSession));
-    
-    return userSession;
+    return { ...data, role };
   },
 
-  register: async ({ name, email, password, role }) => {
-    initDB();
-    await delay(1000);
-
-    const users = JSON.parse(localStorage.getItem('sb_users'));
-    if (users.find(u => u.email === email)) {
-      throw new Error('Email already registered');
-    }
-
-    const newUser = {
-      id: `u${Date.now()}`,
-      name,
-      email,
-      password,
-      role,
-      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${name.replace(' ', '')}`,
-    };
-
-    users.push(newUser);
-    localStorage.setItem('sb_users', JSON.stringify(users));
-
-    const { password: _, ...userSession } = newUser;
-    localStorage.setItem('sb_session', JSON.stringify(userSession));
-
-    return userSession;
+  async login(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
   },
 
-  logout: () => {
-    localStorage.setItem('sb_session', 'logged_out');
+  async logout() {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   },
 
-  getCurrentUser: async () => {
-    initDB();
-    await delay(100);
-    const session = localStorage.getItem('sb_session');
-    if (session === 'logged_out') {
-      return null;
-    }
-    if (session) {
-      try {
-        return JSON.parse(session);
-      } catch (e) {
-        // fallback
-      }
-    }
-    // Default to student demo user so dashboard works immediately on first visit
-    const defaultStudent = DEMO_USERS[0];
-    const { password: _, ...userSession } = defaultStudent;
-    localStorage.setItem('sb_session', JSON.stringify(userSession));
-    return userSession;
+  async getCurrentUser() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) return null;
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    return { ...user, profile: profile || { role: 'student' } };
+  },
+
+  onAuthStateChange(callback) {
+    return supabase.auth.onAuthStateChange(callback);
   }
 };

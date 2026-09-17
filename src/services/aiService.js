@@ -7,10 +7,22 @@ export const aiService = {
   /**
    * Deterministically calculates match score and breakdown against a role.
    */
-  calculateMatchScore: async (studentSkills, roleName) => {
+  calculateMatchScore: async (studentSkills = [], roleName) => {
     await delay(1200);
     const reqs = ROLE_REQUIREMENTS[roleName];
-    if (!reqs) return null;
+    if (!reqs) return {
+      matchScore: 0,
+      strong: [],
+      improve: [],
+      missing: [],
+      gaps: [],
+      breakdown: {
+        Technical: 0,
+        Tools: 0,
+        Projects: 0,
+        Certifications: 0
+      }
+    };
 
     let totalMatch = 0;
     let maxMatch = 0;
@@ -140,14 +152,14 @@ export const aiService = {
   /**
    * Generates a deterministic roadmap.
    */
-  generateRoadmap: async (studentSkills, targetRole, customization = {}) => {
+  generateRoadmap: async (studentSkills = [], targetRole = 'AI Engineer', customization = {}) => {
     // Dynamic import to avoid circular dependency issues if any
     const { ROLE_ROADMAPS, DEFAULT_ROADMAP } = await import('@/data/roadmapData');
-    
-    // Simulate generation time
-    await delay(2500); 
 
-    const template = ROLE_ROADMAPS[targetRole] || DEFAULT_ROADMAP;
+    // Simulate generation time
+    await delay(2500);
+
+    const template = ROLE_ROADMAPS?.[targetRole] || DEFAULT_ROADMAP || { baseDurationWeeks: 4, stages: [], recommendedProjects: [], industryChallenge: '' };
     
     // Adjust duration based on customization
     let duration = template.baseDurationWeeks;
@@ -363,7 +375,7 @@ export const aiService = {
   /**
    * INDUSTRY ANALYTICS & MATCHING
    */
-  calculateTalentMatch: (studentSkills, roleRequirements) => {
+  calculateTalentMatch: (studentSkills = [], roleRequirements = {}) => {
     // Calculates a deterministic match score between a student's skills and a role's requirements
     const required = roleRequirements.requiredSkills || [];
     const preferred = roleRequirements.preferredSkills || [];
@@ -407,24 +419,24 @@ export const aiService = {
     };
   },
 
-  rankCandidates: (students, roleRequirements) => {
-    // Ranks an array of students based on their match to a specific role
+  rankCandidates: (students = [], roleRequirements) => {
+    if (!Array.isArray(students) || students.length === 0 || !roleRequirements) return [];
+
     const ranked = students.map(student => {
-      // In a real app we'd map student.detailedSkills, here we mock it based on topSkills string
-      // Just returning a dummy mapped skill structure if detailedSkills is missing
-      const mockDetailedSkills = student.detailedSkills || student.topSkills.split('•').map(s => ({
-        name: s.trim(), proficiency: 85, verificationStatus: 'Verified'
-      }));
-      
-      const match = aiService.calculateTalentMatch(mockDetailedSkills, roleRequirements);
-      
+      const detailSkills = Array.isArray(student?.detailedSkills) ? student.detailedSkills :
+        (typeof student?.topSkills === 'string' ? student.topSkills.split('•').map(s => ({
+          name: s.trim(), proficiency: 85, verificationStatus: 'Verified'
+        })) : []);
+
+      const match = aiService.calculateTalentMatch(detailSkills, roleRequirements);
+
       return {
         ...student,
         matchDetails: match,
         matchScore: match.matchPercentage
       };
     });
-    
+
     return ranked.sort((a, b) => b.matchScore - a.matchScore);
   },
 

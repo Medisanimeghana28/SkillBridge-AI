@@ -160,19 +160,19 @@ export default function TrainingRecommendations() {
               <form onSubmit={handleCreateSubmit} className="p-6 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Program Name</label>
-                  <input name="name" type="text" defaultValue={aiRecommendation.title} required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                  <input name="name" type="text" placeholder="e.g. AI Fundamentals Bootcamp" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Skills Covered (comma separated)</label>
-                  <input name="skills" type="text" defaultValue={aiRecommendation.targetSkills.join(", ")} required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                  <input name="skills" type="text" placeholder="e.g. Python, SQL, Data Visualization" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Target Departments (comma separated)</label>
-                  <input name="departments" type="text" defaultValue="CSE, AI & ML, IT" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                  <input name="departments" type="text" placeholder="e.g. CSE, AI & ML, IT" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration</label>
-                  <input name="duration" type="text" defaultValue={aiRecommendation.duration} required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
+                  <input name="duration" type="text" placeholder="e.g. 6 Weeks" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Instructor / Partner (Optional)</label>

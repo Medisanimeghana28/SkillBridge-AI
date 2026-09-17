@@ -153,7 +153,7 @@ export default function IndustryJobs() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Location</label>
-                    <input name="location" type="text" defaultValue="Bangalore" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-teal-500" />
+                    <input name="location" type="text" placeholder="e.g. Bangalore" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-teal-500" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Work Mode</label>
@@ -167,7 +167,7 @@ export default function IndustryJobs() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Duration</label>
-                    <input name="duration" type="text" defaultValue="6 Months" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-teal-500" />
+                    <input name="duration" type="text" placeholder="e.g. 6 Months" required className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-white focus:ring-teal-500" />
                   </div>
                 </div>
                 <div>

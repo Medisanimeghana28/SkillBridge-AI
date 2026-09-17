@@ -3,7 +3,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { 
   LayoutDashboard, Users, Building, Briefcase, Activity, 
-  BarChart3, Settings, LogOut, Menu, Bell, Shield
+  BarChart3, Settings, LogOut, Menu, Bell, Shield, Database
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/utils/cn';
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { name: 'Institutions', path: '/admin/institutions', icon: Building },
   { name: 'Industry', path: '/admin/industries', icon: Briefcase },
   { name: 'Skill Demand', path: '/admin/skill-demand', icon: Activity },
+  { name: 'Datasets', path: '/admin/datasets', icon: Database },
   { name: 'Analytics', path: '/admin/analytics', icon: BarChart3 },
 ];
 
