@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabaseClient';
+import { skillService } from '@/services/skillService';
 import { Button } from '@/components/common/Button';
 import { Github, Linkedin, Globe, Check, Plus, Trash2, ArrowRight, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Onboarding() {
-  const { updateProfile } = useAuth();
+  const { user, updateProfile } = useAuth();
   const navigate = useNavigate();
+  const [submitError, setSubmitError] = useState('');
   
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,17 +65,51 @@ export default function Onboarding() {
 
   const finishOnboarding = async () => {
     setIsSubmitting(true);
+    setSubmitError('');
     try {
+      if (!user) throw new Error('No authenticated user.');
+
       await updateProfile({
-        hasCompletedProfile: true,
-        profiles,
-        skills,
-        projects,
-        certifications
+        hasCompletedOnboarding: true,
+        github_url: profiles.github || null,
+        linkedin_url: profiles.linkedin || null,
+        portfolio_url: profiles.portfolio || null,
       });
+
+      for (const name of skills) {
+        await skillService.addStudentSkill(user.id, name, 50, 'Onboarding');
+      }
+
+      if (projects.length > 0) {
+        const { error } = await supabase.from('projects').insert(
+          projects.map((p) => ({
+            student_id: user.id,
+            title: p.title,
+            description: p.description || null,
+            technologies: p.tech
+              ? p.tech.split(',').map((t) => t.trim()).filter(Boolean)
+              : [],
+          }))
+        );
+        if (error) throw error;
+      }
+
+      if (certifications.length > 0) {
+        const { error } = await supabase.from('certifications').insert(
+          certifications.map((c) => ({
+            student_id: user.id,
+            name: c.name,
+            issuer: c.issuer || 'Self-reported',
+            issue_date: c.date ? `${c.date}-01` : null,
+          }))
+        );
+        if (error) throw error;
+      }
+
       navigate('/student/dashboard');
     } catch (err) {
       console.error('Failed to complete onboarding:', err);
+      setSubmitError(err.message || 'Failed to save your profile. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -308,6 +345,12 @@ export default function Onboarding() {
             )}
           </AnimatePresence>
         </div>
+
+        {submitError && (
+          <div className="mx-8 mb-4 p-3 rounded-lg bg-red-50 text-red-600 border border-red-100 text-sm font-medium dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-400">
+            {submitError}
+          </div>
+        )}
 
         {/* Footer actions */}
         <div className="p-6 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 flex justify-between items-center">

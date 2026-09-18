@@ -21,15 +21,18 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await login(email, password);
-      const user = response?.user || response;
+      const user = await login(email, password);
 
       if (!user?.role) {
-        throw new Error('No role returned for this account.');
+        throw new Error('No role found for this account. Please contact support.');
       }
 
       navigate(`/${user.role}/dashboard`, { replace: true });
     } catch (err) {
+      if (err.message === 'Email not confirmed') {
+        navigate('/check-email', { replace: true, state: { email } });
+        return;
+      }
       setError(err.message || "Failed to login");
     } finally {
       setLoading(false);

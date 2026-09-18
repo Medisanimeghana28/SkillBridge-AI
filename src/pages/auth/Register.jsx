@@ -31,7 +31,11 @@ export default function Register() {
 
     try {
       const user = await register(formData);
-      navigate(`/${user.role}/dashboard`, { replace: true });
+      if (user.needsEmailConfirmation) {
+        navigate('/check-email', { replace: true, state: { email: formData.email } });
+      } else {
+        navigate(`/${user.role}/dashboard`, { replace: true });
+      }
     } catch (err) {
       setError(err.message || "Failed to register");
     } finally {

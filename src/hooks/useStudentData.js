@@ -14,18 +14,31 @@ export function useStudentData() {
     roadmap: []
   });
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     async function fetchData() {
       if (!user) return;
+      setLoading(true);
       try {
+        // Each query resolves independently: a missing academic record (or any
+        // single failure) must not wipe out skills, projects, and applications.
         const [skillsRes, projectsRes, certsRes, academicRes, appsRes] = await Promise.all([
-          supabase.from('student_skills').select('*, skills(name, category)').eq('student_id', user.id),
-          supabase.from('projects').select('*').eq('student_id', user.id),
-          supabase.from('certifications').select('*').eq('student_id', user.id),
-          supabase.from('academic_records').select('*').eq('student_id', user.id).single(),
+          supabase.from('student_skills').select('*, skills(name, category)').eq('student_id', user.id)
+            .then((r) => r, (e) => ({ data: [], error: e })),
+          supabase.from('projects').select('*').eq('student_id', user.id)
+            .then((r) => r, (e) => ({ data: [], error: e })),
+          supabase.from('certifications').select('*').eq('student_id', user.id)
+            .then((r) => r, (e) => ({ data: [], error: e })),
+          supabase.from('academic_records').select('*').eq('student_id', user.id).maybeSingle()
+            .then((r) => r, (e) => ({ data: null, error: e })),
           supabase.from('applications').select('*, internships(*, profiles(company_name))').eq('student_id', user.id)
+            .then((r) => r, (e) => ({ data: [], error: e })),
         ]);
+
+        [skillsRes, projectsRes, certsRes, academicRes, appsRes].forEach((r) => {
+          if (r.error) console.error('useStudentData query failed:', r.error.message || r.error);
+        });
 
         setData({
           skills: skillsRes.data || [],
@@ -33,8 +46,8 @@ export function useStudentData() {
           certifications: certsRes.data || [],
           academic: academicRes.data || null,
           applications: appsRes.data || [],
-          skillGaps: [], // Calculate via AI service in production
-          roadmap: [] // Generate via AI service in production
+          skillGaps: [],
+          roadmap: []
         });
       } catch (err) {
         console.error(err);
@@ -43,7 +56,7 @@ export function useStudentData() {
       }
     }
     fetchData();
-  }, [user]);
+  }, [user, refreshKey]);
 
-  return { data, loading, refetch: () => setLoading(true) };
+  return { data, loading, refetch: () => setRefreshKey((k) => k + 1) };
 }

@@ -2,12 +2,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from '@/pages/landing/LandingPage';
 import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
+import CheckEmail from '@/pages/auth/CheckEmail';
 import { AuthProvider, useAuth } from '@/context/AuthContext';
 import { ThemeProvider } from '@/context/ThemeContext';
-import { storageService } from '@/services/storageService';
 import { StudentLayout } from '@/layouts/StudentLayout';
 import StudentDashboard from '@/pages/student/StudentDashboard';
-import PlaceholderPage from '@/components/common/PlaceholderPage';
 
 import SkillDNA from '@/pages/student/SkillDNA';
 import SkillGapAnalyzer from '@/pages/student/SkillGapAnalyzer';
@@ -17,6 +16,7 @@ import StudentChallenges from '@/pages/student/Challenges';
 import Applications from '@/pages/student/Applications';
 import Passport from '@/pages/student/Passport';
 import PassportPreview from '@/pages/student/PassportPreview';
+import PublicPassport from '@/pages/student/PublicPassport';
 import StudentProfile from '@/pages/student/Profile';
 import StudentSettings from '@/pages/student/Settings';
 import Onboarding from '@/pages/student/Onboarding';
@@ -29,6 +29,8 @@ import AcademiaStudents from '@/pages/academia/Students';
 import AcademiaSkillGaps from '@/pages/academia/SkillGaps';
 import AcademiaDemand from '@/pages/academia/Demand';
 import AcademiaTraining from '@/pages/academia/Training';
+import AcademiaReports from '@/pages/academia/Reports';
+import AcademiaSettings from '@/pages/academia/Settings';
 
 // Industry Imports
 import IndustryLayout from '@/layouts/IndustryLayout';
@@ -39,11 +41,18 @@ import IndustryChallenges from '@/pages/industry/Challenges';
 import IndustryRequirements from '@/pages/industry/Requirements';
 
 import IndustryFeedback from '@/pages/industry/Feedback';
+import IndustrySettings from '@/pages/industry/Settings';
 
 // Admin Imports
 import AdminLayout from '@/layouts/AdminLayout';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import Datasets from '@/pages/admin/Datasets';
+import AdminStudents from '@/pages/admin/Students';
+import AdminInstitutions from '@/pages/admin/Institutions';
+import AdminIndustries from '@/pages/admin/Industries';
+import AdminSkillDemand from '@/pages/admin/SkillDemand';
+import AdminAnalytics from '@/pages/admin/Analytics';
+import AdminSettings from '@/pages/admin/Settings';
 
 // Simple Protected Route wrapper
 const ProtectedRoute = ({ children, allowedRoles, requireOnboarding = true }) => {
@@ -59,22 +68,16 @@ const ProtectedRoute = ({ children, allowedRoles, requireOnboarding = true }) =>
     return <Navigate to={`/${user.role}/dashboard`} replace />;
   }
   
-  if (requireOnboarding && user.role === 'student' && user.hasCompletedProfile === false) {
+  if (requireOnboarding && user.role === 'student' && user.hasCompletedOnboarding === false) {
     return <Navigate to="/student/onboarding" replace />;
   }
 
-  if (!requireOnboarding && user.role === 'student' && user.hasCompletedProfile !== false) {
+  if (!requireOnboarding && user.role === 'student' && user.hasCompletedOnboarding !== false) {
     return <Navigate to="/student/dashboard" replace />;
   }
   
   return children;
 };
-
-const LogoutButton = () => {
-  const { logout } = useAuth();
-  return <button onClick={logout} className="mt-4 px-4 py-2 bg-red-500 text-white rounded">Logout</button>;
-}
-
 
 function App() {
   return (
@@ -85,9 +88,11 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/check-email" element={<CheckEmail />} />
             
             {/* Public Preview Route (does not need sidebar layout) */}
             <Route path="/student/passport/preview" element={<PassportPreview />} />
+            <Route path="/passport/:token" element={<PublicPassport />} />
             
             {/* Student Onboarding Route */}
             <Route path="/student/onboarding" element={
@@ -128,8 +133,8 @@ function App() {
               <Route path="skill-gaps" element={<AcademiaSkillGaps />} />
               <Route path="demand" element={<AcademiaDemand />} />
               <Route path="training" element={<AcademiaTraining />} />
-              <Route path="reports" element={<PlaceholderPage title="Academia Reports" />} />
-              <Route path="settings" element={<PlaceholderPage title="Settings" />} />
+              <Route path="reports" element={<AcademiaReports />} />
+              <Route path="settings" element={<AcademiaSettings />} />
             </Route>
             
 
@@ -147,7 +152,7 @@ function App() {
               <Route path="challenges" element={<IndustryChallenges />} />
               <Route path="requirements" element={<IndustryRequirements />} />
               <Route path="feedback" element={<IndustryFeedback />} />
-              <Route path="settings" element={<PlaceholderPage title="Settings" />} />
+              <Route path="settings" element={<IndustrySettings />} />
             </Route>
             
             {/* Admin Routes */}
@@ -159,12 +164,12 @@ function App() {
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="datasets" element={<Datasets />} />
-              <Route path="students" element={<PlaceholderPage title="Admin Students Directory" />} />
-              <Route path="institutions" element={<PlaceholderPage title="Admin Institutions" />} />
-              <Route path="industries" element={<PlaceholderPage title="Admin Industry Partners" />} />
-              <Route path="skill-demand" element={<PlaceholderPage title="Ecosystem Skill Demand" />} />
-              <Route path="analytics" element={<PlaceholderPage title="Ecosystem Analytics" />} />
-              <Route path="settings" element={<PlaceholderPage title="Settings" />} />
+              <Route path="students" element={<AdminStudents />} />
+              <Route path="institutions" element={<AdminInstitutions />} />
+              <Route path="industries" element={<AdminIndustries />} />
+              <Route path="skill-demand" element={<AdminSkillDemand />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
             
             <Route path="*" element={<Navigate to="/" replace />} />

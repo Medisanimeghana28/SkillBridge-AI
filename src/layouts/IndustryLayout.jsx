@@ -4,8 +4,9 @@ import { Button } from '@/components/common/Button';
 import ThemeToggle from '@/components/common/ThemeToggle';
 import { 
   LayoutDashboard, Search, Briefcase, Target, FileSignature, MessageSquare, 
-  Settings, LogOut, Menu, Bell, Building2
+  Settings, LogOut, Menu, Building2
 } from 'lucide-react';
+import NotificationBell from '@/components/common/NotificationBell';
 import { useState, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 
@@ -96,10 +97,7 @@ export default function IndustryLayout() {
             </span>
           </div>
           <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-rose-500 border-2 border-white dark:border-slate-900"></span>
-            </button>
+            <NotificationBell />
             <ThemeToggle />
             <div className="h-8 w-8 rounded-full bg-teal-100 border border-teal-200 dark:bg-teal-900/30 dark:border-teal-800 flex items-center justify-center text-teal-700 dark:text-teal-300 font-bold text-sm">
               TN

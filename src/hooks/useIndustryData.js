@@ -11,11 +11,13 @@ export function useIndustryData() {
     requirements: []
   });
   const [loading, setLoading] = useState(true);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     async function fetchData() {
       try {
         if (!user) return;
+        setLoading(true);
         
         const [internshipsRes, challengesRes, reqRes] = await Promise.all([
           supabase.from('internships').select('*').eq('industry_id', user.id),
@@ -37,7 +39,7 @@ export function useIndustryData() {
     }
     
     fetchData();
-  }, [user]);
+  }, [user, refreshKey]);
 
-  return { data, loading, refetch: () => setLoading(true) };
+  return { data, loading, refetch: () => setRefreshKey((k) => k + 1) };
 }

@@ -4,8 +4,9 @@ import { Button } from '@/components/common/Button';
 import ThemeToggle from '@/components/common/ThemeToggle';
 import { 
   LayoutDashboard, Users, Activity, TrendingUp, BookOpen, 
-  FileBarChart, Settings, LogOut, Menu, Bell, School
+  FileBarChart, Settings, LogOut, Menu, School
 } from 'lucide-react';
+import NotificationBell from '@/components/common/NotificationBell';
 import { useState, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 
@@ -94,10 +95,7 @@ export default function AcademiaLayout() {
             <span className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">CMR Institute of Technology</span>
           </div>
           <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-rose-500 border-2 border-white dark:border-slate-900"></span>
-            </button>
+            <NotificationBell />
             <ThemeToggle />
             <div className="h-8 w-8 rounded-full bg-indigo-100 border border-indigo-200 dark:bg-indigo-900 dark:border-indigo-800 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-sm">
               CM

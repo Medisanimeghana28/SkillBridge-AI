@@ -1,18 +1,19 @@
 import { useAcademiaData } from "@/hooks/useAcademiaData";
-import { AlertCircle, Target } from "lucide-react";
-import { cn } from "@/utils/cn";
+import { AlertCircle } from "lucide-react";
 
 export default function SkillGaps() {
   const { data, loading } = useAcademiaData();
 
   if (loading) return <div className="p-8 animate-pulse text-slate-500">Loading skill gap data...</div>;
 
+  const max = Math.max(1, ...data.skillGaps.map((g) => g.gap));
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white sm:text-3xl">Department Skill Heatmap</h1>
         <p className="mt-2 text-slate-500 dark:text-slate-400">
-          Identify exactly where student proficiency is strong and where critical gaps exist across all departments.
+          Average student proficiency vs the 80% industry bar, for the most demanded skills.
         </p>
       </div>
 
@@ -25,8 +26,28 @@ export default function SkillGaps() {
           </p>
         </div>
       ) : (
-        <div className="p-4 bg-white border border-slate-200 rounded-xl">
-          {/* Heatmap implementation would go here once dataset is populated */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
+          <div className="space-y-4">
+            {data.skillGaps.map((g) => (
+              <div key={g.skill}>
+                <div className="flex items-center justify-between text-sm mb-1">
+                  <span className="font-medium text-slate-800 dark:text-slate-200">
+                    {g.skill}
+                    <span className="ml-2 text-xs font-normal text-slate-400">
+                      {g.current}% avg · {g.demand} postings · {g.students} students
+                    </span>
+                  </span>
+                  <span className={`font-semibold ${g.gap > 30 ? "text-red-600 dark:text-red-400" : g.gap > 15 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                    {g.gap > 0 ? `-${g.gap}` : "met"}
+                  </span>
+                </div>
+                <div className="h-2.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden flex">
+                  <div className="h-full bg-emerald-500" style={{ width: `${g.current}%` }} />
+                  <div className="h-full bg-red-400/70" style={{ width: `${Math.round((g.gap / max) * (100 - g.current))}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

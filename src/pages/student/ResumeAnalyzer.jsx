@@ -1,18 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useStudentData } from '@/hooks/useStudentData';
 import { resumeService } from '@/services/resumeService';
+import { skillService } from '@/services/skillService';
 import { Button } from '@/components/common/Button';
 import { UploadCloud, FileText, CheckCircle2, AlertCircle, Sparkles, Plus } from 'lucide-react';
 import { cn } from '@/utils/cn';
 
+const MAX_BYTES = 5 * 1024 * 1024;
+const ACCEPTED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+
 export default function ResumeAnalyzer() {
   const { user } = useAuth();
+  const { data: studentData } = useStudentData();
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [analyzing, setAnalyzing] = useState(false);
   const [resumes, setResumes] = useState([]);
   const [activeAnalysis, setActiveAnalysis] = useState(null);
   const [error, setError] = useState(null);
+  const [notice, setNotice] = useState(null);
+  const [dragOver, setDragOver] = useState(false);
+  const [addingSkill, setAddingSkill] = useState(null);
 
   useEffect(() => {
     loadResumes();
@@ -31,9 +40,25 @@ export default function ResumeAnalyzer() {
     }
   }
 
+  const acceptFile = (candidate) => {
+    if (!candidate) return;
+    const typeOk = ACCEPTED_TYPES.includes(candidate.type) || /\.(pdf|jpe?g|png)$/i.test(candidate.name);
+    if (!typeOk) {
+      setError('Unsupported file type. Please upload a PDF, JPG, or PNG.');
+      return;
+    }
+    if (candidate.size > MAX_BYTES) {
+      setError('File is larger than 5MB. Please upload a smaller file.');
+      return;
+    }
+    setError(null);
+    setFile(candidate);
+  };
+
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      acceptFile(e.target.files[0]);
+      e.target.value = '';
     }
   };
 
@@ -56,13 +81,35 @@ export default function ResumeAnalyzer() {
     setAnalyzing(true);
     setError(null);
     try {
-      const data = await resumeService.analyzeResume(resumeId);
+      const skills = (studentData.skills || []).map((row) => ({
+        name: row.skills?.name || row.name,
+        proficiency: row.proficiency ?? 0,
+        category: row.skills?.category,
+      }));
+      const data = await resumeService.analyzeResume(resumeId, {
+        skills,
+        targetRole: user?.profile?.target_role || user?.targetRole || null,
+      });
       setActiveAnalysis(data);
       await loadResumes();
     } catch (err) {
       setError(err.message);
     } finally {
       setAnalyzing(false);
+    }
+  };
+
+  const handleAddSkill = async (skillName) => {
+    if (!user || addingSkill) return;
+    setAddingSkill(skillName);
+    setNotice(null);
+    try {
+      await skillService.addStudentSkill(user.id, skillName, 50, 'Resume');
+      setNotice(`"${skillName}" added to your Skill DNA.`);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setAddingSkill(null);
     }
   };
 
@@ -83,13 +130,38 @@ export default function ResumeAnalyzer() {
         </div>
       )}
 
+      {notice && (
+        <div className="p-4 bg-green-50 text-green-700 border border-green-200 rounded-lg flex items-center gap-2">
+          <CheckCircle2 className="h-5 w-5" /> {notice}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Upload Section */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
             <h3 className="font-semibold mb-4 text-slate-900 dark:text-white">Upload New Resume</h3>
-            <div className="border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-6 flex flex-col items-center text-center">
+            <div
+              className={cn(
+                "border-2 border-dashed rounded-lg p-6 flex flex-col items-center text-center transition-colors",
+                dragOver
+                  ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20"
+                  : "border-slate-300 dark:border-slate-700"
+              )}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setDragOver(true);
+              }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                  acceptFile(e.dataTransfer.files[0]);
+                }
+              }}
+            >
               <UploadCloud className="h-10 w-10 text-slate-400 mb-3" />
               <p className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Drag & drop or click to upload</p>
               <p className="text-xs text-slate-500 mb-4">Supported formats: PDF, JPG, PNG (Max 5MB)</p>
@@ -190,10 +262,17 @@ export default function ResumeAnalyzer() {
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {activeAnalysis.skills_detected?.map(skill => (
-                        <div key={skill} className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1 group cursor-pointer hover:bg-primary-100 hover:text-primary-700 transition-colors">
-                          {skill}
+                        <button
+                          key={skill}
+                          type="button"
+                          disabled={addingSkill === skill}
+                          onClick={() => handleAddSkill(skill)}
+                          title="Add to Skill DNA"
+                          className="bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-full text-xs font-medium text-slate-700 dark:text-slate-300 flex items-center gap-1 group cursor-pointer hover:bg-primary-100 hover:text-primary-700 transition-colors disabled:opacity-50"
+                        >
+                          {addingSkill === skill ? 'Adding...' : skill}
                           <Plus className="h-3 w-3 opacity-0 group-hover:opacity-100" />
-                        </div>
+                        </button>
                       ))}
                     </div>
                     <p className="text-[10px] text-slate-400 mt-2">Click a skill to add it to your Skill DNA (Source: Resume)</p>

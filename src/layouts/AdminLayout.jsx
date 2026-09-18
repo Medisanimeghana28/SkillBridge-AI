@@ -3,8 +3,9 @@ import { useAuth } from '@/context/AuthContext';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { 
   LayoutDashboard, Users, Building, Briefcase, Activity, 
-  BarChart3, Settings, LogOut, Menu, Bell, Shield, Database
+  BarChart3, Settings, LogOut, Menu, Shield, Database
 } from 'lucide-react';
+import NotificationBell from '@/components/common/NotificationBell';
 import { useState, useEffect } from 'react';
 import { cn } from '@/utils/cn';
 
@@ -107,10 +108,7 @@ export default function AdminLayout() {
               <input type="text" placeholder="Search ecosystem..." className="pl-9 pr-4 py-1.5 rounded-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 w-64 text-slate-700 dark:text-slate-200" />
               <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
             </div>
-            <button className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-rose-500 border-2 border-white dark:border-slate-900"></span>
-            </button>
+            <NotificationBell />
             <ThemeToggle />
           </div>
         </header>

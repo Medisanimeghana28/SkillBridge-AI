@@ -1,6 +1,7 @@
 import { useStudentData } from "@/hooks/useStudentData";
 import { Link } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Printer } from "lucide-react";
+import { Button } from "@/components/common/Button";
 
 export default function PassportPreview() {
   const { data, loading } = useStudentData();
@@ -9,9 +10,14 @@ export default function PassportPreview() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Link to="/student/passport" className="text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 w-fit">
-        <ArrowLeft className="h-4 w-4" /> Back to Passport
-      </Link>
+      <div className="flex items-center justify-between print:hidden">
+        <Link to="/student/passport" className="text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1 w-fit">
+          <ArrowLeft className="h-4 w-4" /> Back to Passport
+        </Link>
+        <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-2">
+          <Printer className="h-4 w-4" /> Download PDF
+        </Button>
+      </div>
 
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-10 shadow-lg">
         <div className="text-center mb-10 pb-10 border-b border-slate-200 dark:border-slate-800">

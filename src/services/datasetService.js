@@ -14,9 +14,11 @@ export const datasetService = {
   },
 
   async getImportBatches() {
+    // NOTE: import_batches has no FK to profiles, so only the
+    // dataset_sources embed is valid here.
     const { data, error } = await supabase
       .from('import_batches')
-      .select('*, dataset_sources(name), profiles(full_name)')
+      .select('*, dataset_sources(name)')
       .order('import_date', { ascending: false });
     if (error) throw error;
     return data;

@@ -45,14 +45,22 @@ CREATE TABLE IF NOT EXISTS import_batches (
 -- (Adding import_batch_id to main tables if they don't have it)
 -- Note: In a real migration we'd use ALTER TABLE IF NOT EXISTS, but this schema acts as the master reference.
 
+-- NOTE: profiles.id intentionally has no FK to auth.users: dataset-imported
+-- profiles exist without auth accounts, and are linked on user signup.
 CREATE TABLE IF NOT EXISTS profiles (
-  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   role user_role NOT NULL,
   email TEXT NOT NULL,
   full_name TEXT,
   avatar_url TEXT,
   company_name TEXT,
   institution_name TEXT,
+  has_completed_onboarding BOOLEAN NOT NULL DEFAULT FALSE,
+  intent_role TEXT,
+  target_role TEXT,
+  github_url TEXT,
+  linkedin_url TEXT,
+  portfolio_url TEXT,
   import_batch_id UUID REFERENCES import_batches(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -203,4 +211,160 @@ CREATE TABLE IF NOT EXISTS resume_analysis (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Note: RLS Policies should be applied here following the previous pattern.
+CREATE TABLE IF NOT EXISTS roadmaps (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  target_role TEXT NOT NULL,
+  duration_weeks INTEGER,
+  stages JSONB NOT NULL DEFAULT '[]',
+  status TEXT DEFAULT 'Active',
+  import_batch_id UUID REFERENCES import_batches(id) ON DELETE SET NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS feedback (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  industry_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  institution TEXT,
+  subject TEXT NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  type TEXT NOT NULL,
+  title TEXT NOT NULL,
+  body TEXT,
+  link TEXT,
+  read BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Application events -> notifications (both directions).
+CREATE OR REPLACE FUNCTION public.notify_application_events()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  job_title TEXT;
+  industry_owner UUID;
+BEGIN
+  SELECT title, industry_id INTO job_title, industry_owner
+  FROM public.internships
+  WHERE id = COALESCE(NEW.internship_id, OLD.internship_id);
+
+  IF TG_OP = 'INSERT' THEN
+    -- New application -> notify the industry poster.
+    IF industry_owner IS NOT NULL THEN
+      INSERT INTO public.notifications (user_id, type, title, body, link)
+      VALUES (
+        industry_owner,
+        'new_application',
+        'New application received',
+        'A candidate applied for "' || COALESCE(job_title, 'your internship') || '".',
+        '/industry/jobs'
+      );
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  IF TG_OP = 'UPDATE' AND NEW.status IS DISTINCT FROM OLD.status THEN
+    -- Status change -> notify the student.
+    INSERT INTO public.notifications (user_id, type, title, body, link)
+    VALUES (
+      NEW.student_id,
+      'application_status',
+      'Application update: ' || NEW.status,
+      'Your application for "' || COALESCE(job_title, 'an internship') || '" is now ' || NEW.status || '.',
+      '/student/applications'
+    );
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_notify_application_events ON public.applications;
+CREATE TRIGGER trg_notify_application_events
+  AFTER INSERT OR UPDATE OF status ON public.applications
+  FOR EACH ROW EXECUTE FUNCTION public.notify_application_events();
+
+-- Challenge submission events -> notify the industry poster.
+CREATE OR REPLACE FUNCTION public.notify_submission_events()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  ch_title TEXT;
+  industry_owner UUID;
+BEGIN
+  SELECT title, industry_id INTO ch_title, industry_owner
+  FROM public.challenges
+  WHERE id = NEW.challenge_id;
+
+  IF TG_OP = 'INSERT' AND industry_owner IS NOT NULL THEN
+    INSERT INTO public.notifications (user_id, type, title, body, link)
+    VALUES (
+      industry_owner,
+      'new_submission',
+      'New challenge submission',
+      'A student submitted "' || COALESCE(NEW.project_title, 'a project') || '" for "' || COALESCE(ch_title, 'your challenge') || '".',
+      '/industry/challenges'
+    );
+  END IF;
+
+  IF TG_OP = 'UPDATE' AND NEW.status IS DISTINCT FROM OLD.status THEN
+    INSERT INTO public.notifications (user_id, type, title, body, link)
+    VALUES (
+      NEW.student_id,
+      'submission_status',
+      'Submission update: ' || NEW.status,
+      'Your submission for "' || COALESCE(ch_title, 'a challenge') || '" is now ' || NEW.status || '.',
+      '/student/challenges'
+    );
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_notify_submission_events ON public.challenge_submissions;
+CREATE TRIGGER trg_notify_submission_events
+  AFTER INSERT OR UPDATE OF status ON public.challenge_submissions
+  FOR EACH ROW EXECUTE FUNCTION public.notify_submission_events();
+
+CREATE TABLE IF NOT EXISTS profile_share_tokens (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id UUID UNIQUE REFERENCES profiles(id) ON DELETE CASCADE,
+  token TEXT UNIQUE NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Private bucket for student resume files. First path segment must be the
+-- owner's auth user id (enforced by the storage RLS policies below).
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('resumes', 'resumes', false)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS resumes_insert_own ON storage.objects;
+DROP POLICY IF EXISTS resumes_select_own ON storage.objects;
+DROP POLICY IF EXISTS resumes_update_own ON storage.objects;
+DROP POLICY IF EXISTS resumes_delete_own ON storage.objects;
+
+CREATE POLICY resumes_insert_own ON storage.objects FOR INSERT TO authenticated
+  WITH CHECK (bucket_id = 'resumes' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY resumes_select_own ON storage.objects FOR SELECT TO authenticated
+  USING (bucket_id = 'resumes' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY resumes_update_own ON storage.objects FOR UPDATE TO authenticated
+  USING (bucket_id = 'resumes' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY resumes_delete_own ON storage.objects FOR DELETE TO authenticated
+  USING (bucket_id = 'resumes' AND (storage.foldername(name))[1] = auth.uid()::text);
+
+-- RLS policies live in rls_policies.sql (least-privilege, see that file).

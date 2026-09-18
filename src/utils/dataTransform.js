@@ -28,22 +28,50 @@ export const dataTransform = {
     return mapped;
   },
   
+  // Splits one CSV line respecting double-quoted fields
+  // (including commas and escaped "" inside quotes).
+  splitCSVLine(line) {
+    const cells = [];
+    let current = '';
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          if (line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          current += ch;
+        }
+      } else if (ch === '"') {
+        inQuotes = true;
+      } else if (ch === ',') {
+        cells.push(current);
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    cells.push(current);
+    return cells.map((c) => c.trim());
+  },
+
   parseCSV(text) {
-    // A naive CSV parser to remove the need for PapaParse if missing.
-    // Splits by newline, then by comma, handling basic quotes.
     const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
     if (lines.length === 0) return [];
-    
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+
+    const headers = this.splitCSVLine(lines[0]);
     const results = [];
-    
+
     for (let i = 1; i < lines.length; i++) {
-      // Very naive split that doesn't fully handle commas inside quotes, 
-      // but works for simple flat datasets. Use papaparse for production.
-      const row = lines[i].split(',').map(cell => cell.trim().replace(/^"|"$/g, ''));
+      const row = this.splitCSVLine(lines[i]);
       const obj = {};
       headers.forEach((h, index) => {
-        obj[h] = row[index] || null;
+        obj[h] = row[index] !== undefined && row[index] !== '' ? row[index] : null;
       });
       results.push(obj);
     }
